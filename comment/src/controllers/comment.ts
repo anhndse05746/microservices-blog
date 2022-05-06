@@ -3,12 +3,14 @@ import { randomBytes } from "crypto";
 import { CreateCommentDTO } from "./dtos/comments";
 import axios from "axios";
 
+export type CommentStatus = "pending" | "approved" | "rejected";
 interface IComment {
   id: string;
   content: string;
+  status: CommentStatus;
 }
 
-const commentByPostId: { [postId: string]: Array<IComment> } = {};
+export const commentByPostId: { [postId: string]: Array<IComment> } = {};
 
 const get: RequestHandler<{ id: string }> = (req, res, next) => {
   res.send(commentByPostId[req.params.id] || []);
@@ -20,14 +22,14 @@ const create: RequestHandler<{ id: string }> = (req, res, next) => {
 
   const comments = commentByPostId[req.params.id] || [];
 
-  comments.push({ id: commentId, content });
+  comments.push({ id: commentId, content, status: "pending" });
 
   commentByPostId[req.params.id] = comments;
 
   //send event to event-bus
   axios.post("http://localhost:3005/events", {
     type: "CommentCreated",
-    data: { id: commentId, content, postId: req.params.id },
+    data: { id: commentId, content, postId: req.params.id, status: "pending" },
   });
 
   res.status(201).send(comments);

@@ -24,6 +24,9 @@ app.post("/events", (req: Request, res: Response, next: NextFunction) => {
   //Query
   axios.post("http://localhost:3003/events", event);
 
+  //Moderation
+  axios.post("http://localhost:3004/events", event);
+
   res.send("OK");
 });
 

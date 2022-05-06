@@ -9,6 +9,7 @@ interface Post {
 interface Comment {
   id: string;
   content: string;
+  status: "pending" | "approved" | "rejected";
 }
 
 const posts: { [postId: string]: Post } = {};
@@ -16,7 +17,7 @@ const posts: { [postId: string]: Post } = {};
 const eventsReceived: RequestHandler = (req, res, next) => {
   console.log(req.body);
 
-  const eventType: string = req.body.type;
+  const { type: eventType, data } = req.body;
 
   if (eventType === "PostCreated") {
     const post = req.body.data as Post;
@@ -25,12 +26,20 @@ const eventsReceived: RequestHandler = (req, res, next) => {
   }
 
   if (eventType === "CommentCreated") {
-    const { postId, ...comment } = req.body.data;
-    console.log(comment);
+    const { postId, ...comment } = data;
+
     posts[postId].comments?.push(comment);
   }
 
-  console.log(posts);
+  if (eventType === "CommentUpdated") {
+    const { id: commentId, postId, status } = data;
+
+    const comments = posts[postId].comments;
+
+    const comment = comments!.find((comment) => comment.id === commentId);
+
+    comment!.status = status;
+  }
 
   res.send("Okay");
 };
