@@ -17,10 +17,14 @@ const posts: { [postId: string]: Post } = {};
 const eventsReceived: RequestHandler = (req, res, next) => {
   console.log(req.body);
 
-  const { type: eventType, data } = req.body;
+  const { type, data } = req.body;
 
+  res.send("Okay");
+};
+
+export const handleEvents = (eventType: string, data: any) => {
   if (eventType === "PostCreated") {
-    const post = req.body.data as Post;
+    const post = data as Post;
 
     posts[post.id] = { ...post, comments: [] };
   }
@@ -40,8 +44,6 @@ const eventsReceived: RequestHandler = (req, res, next) => {
 
     comment!.status = status;
   }
-
-  res.send("Okay");
 };
 
 const getPosts: RequestHandler = (req, res, next) => {
